@@ -1,0 +1,5 @@
+
+# Portfolio Static Demo
+/portfolio/node_modules
+/portfolio/dist
+/portfolio/.env

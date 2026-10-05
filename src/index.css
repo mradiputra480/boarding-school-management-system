@@ -1,0 +1,222 @@
+@import "tailwindcss";
+@source "./";
+
+@custom-variant dark (&:where(.dark, .dark *));
+:root {
+  --app-bg: #f5f7f6;
+  --app-card: #ffffff;
+  --app-text: #1a2e24;
+  --app-text-muted: #6b8a7d;
+  --app-border: #e2e8e5;
+  --app-hover: #f9fafb;
+}
+
+.dark {
+  --app-bg: #0f172a;
+  --app-card: #1e293b;
+  --app-text: #f8fafc;
+  --app-text-muted: #94a3b8;
+  --app-border: #334155;
+  --app-hover: #334155;
+}
+
+/* ===== SIAKAD Design Tokens (dari Google Stitch) ===== */
+@theme {
+  /* Primary */
+  --color-primary: #096139;
+  --color-primary-container: #2d7a50;
+  --color-primary-fixed: #a5f4c0;
+  --color-on-primary: #ffffff;
+
+  /* Secondary (Gold) */
+  --color-secondary: #7b5800;
+  --color-secondary-container: #fdc65b;
+  --color-secondary-fixed: #ffdea6;
+  --color-on-secondary: #ffffff;
+
+  /* Tertiary (Blue) */
+  --color-tertiary: #00588d;
+  --color-tertiary-container: #0071b3;
+  --color-on-tertiary: #ffffff;
+
+  /* Surface */
+  --color-surface: #e8fff0;
+  --color-surface-dim: #c8e0d1;
+  --color-surface-bright: #e8fff0;
+  --color-surface-container: #dcf4e4;
+  --color-surface-container-low: #e1f9ea;
+  --color-surface-container-high: #d6eede;
+  --color-surface-container-highest: #d0e8d9;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-variant: #d0e8d9;
+  --color-on-surface: #0b1f16;
+  --color-on-surface-variant: #3f4941;
+
+  /* Error */
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+
+  /* Outline */
+  --color-outline: #6f7a71;
+  --color-outline-variant: #bfc9bf;
+
+  /* Inverse */
+  --color-inverse-surface: #20352a;
+  --color-inverse-on-surface: #dff7e7;
+  --color-inverse-primary: #8ad7a5;
+
+  /* SIAKAD Custom Colors */
+  --color-siakad-green: #2d7a50;
+  --color-siakad-gold: #d4a23a;
+  --color-siakad-blue: #3a8fd4;
+  --color-siakad-red: #d45a5a;
+  
+  /* Dynamic Layout Colors mapping to CSS vars */
+  --color-layout-bg: var(--app-bg);
+  --color-layout-card: var(--app-card);
+  --color-layout-text: var(--app-text);
+  --color-layout-muted: var(--app-text-muted);
+  --color-layout-border: var(--app-border);
+  --color-layout-hover: var(--app-hover);
+
+  /* Font */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Animations */
+  --animate-fade-in-up: fade-in-up 0.6s ease-out backwards;
+  --animate-bounce-subtle: bounce-subtle 2s infinite ease-in-out;
+  
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes bounce-subtle {
+    0%, 100% { transform: translateY(-3%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+    50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1); }
+  }
+}
+
+/* ===== Base Styles ===== */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-layout-bg);
+  color: var(--color-layout-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Certificate Background Patterns ===== */
+:root {
+  --pattern-formal: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(218,165,32,0.15) 35px, rgba(218,165,32,0.15) 70px);
+  --pattern-sports: repeating-linear-gradient(135deg, transparent, transparent 20px, rgba(0,100,200,0.12) 20px, rgba(0,100,200,0.12) 40px);
+  --pattern-science: radial-gradient(circle, rgba(0,150,136,0.15) 2px, transparent 2px);
+  --pattern-education: linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
+  --pattern-art: radial-gradient(ellipse at 20% 50%, rgba(255,0,100,0.1) 0%, transparent 50%), radial-gradient(ellipse at 80% 50%, rgba(100,0,255,0.1) 0%, transparent 50%);
+  --pattern-technology: linear-gradient(rgba(0,200,200,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,200,200,0.1) 1px, transparent 1px);
+  --pattern-music: repeating-linear-gradient(0deg, transparent, transparent 15px, rgba(100,50,150,0.12) 15px, rgba(100,50,150,0.12) 16px);
+  --pattern-nature: radial-gradient(circle at 30% 30%, rgba(34,139,34,0.15) 0%, transparent 40%), radial-gradient(circle at 70% 70%, rgba(34,139,34,0.15) 0%, transparent 40%);
+  --pattern-modern: linear-gradient(135deg, rgba(0,0,0,0.08) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.08) 75%, transparent 75%, transparent);
+}
+
+/* ===== Islamic Pattern Background (dari Stitch) ===== */
+.bg-islamic-pattern {
+  background-color: var(--color-layout-bg);
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='%232d7a50' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+/* Pattern background sizes for radial/linear gradients */
+.cert-pattern-science { background-size: 20px 20px !important; }
+.cert-pattern-education { background-size: 30px 30px !important; }
+.cert-pattern-technology { background-size: 15px 15px !important; }
+.cert-pattern-modern { background-size: 40px 40px !important; }
+
+/* ===== Scrollbar ===== */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-layout-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  /* Hide sidebar, topbar, and UI controls */
+  aside, nav, header,
+  .print\:hidden,
+  button:not(.print-keep) {
+    display: none !important;
+  }
+
+  /* Reset layout — full width */
+  body, html {
+    background: white !important;
+    color: black !important;
+    font-size: 11px !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Show print-only elements */
+  .print\:block {
+    display: block !important;
+  }
+
+  /* Schedule table print-friendly */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 10px !important;
+  }
+  th, td {
+    border: 1px solid #333 !important;
+    padding: 4px !important;
+    background: white !important;
+    color: black !important;
+  }
+  th {
+    background: #f0f0f0 !important;
+    font-weight: bold !important;
+  }
+
+  /* Schedule slot colors for print */
+  [class*="rounded-lg"][class*="border"] {
+    border: 1px solid #999 !important;
+    border-radius: 4px !important;
+    padding: 3px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Remove card/shadow styles */
+  .rounded-xl, .rounded-2xl {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Landscape orientation */
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+}

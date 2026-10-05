@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IIS COMMUNITY CONNECT — Offline Data Viewer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --bg: #f4f6f5;
+    --card: #ffffff;
+    --border: #e2e8e5;
+    --text: #1a2e24;
+    --muted: #6b7f75;
+    --primary: #2d7a50;
+    --primary-light: #edf7f1;
+    --accent: #d4a23a;
+    --danger: #d45a5a;
+    --blue: #3a8fd4;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 40px rgba(0,0,0,0.1);
+    --radius: 12px;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    background: linear-gradient(135deg, #1a3a28 0%, #2d7a50 100%);
+    color: white;
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    top: -50%; right: -30%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+  .header h1 span { color: var(--accent); }
+  .header p { font-size: 14px; opacity: 0.8; margin-top: 6px; }
+  .header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 10px;
+  }
+
+  /* ─── CONTAINER ─── */
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* ─── UPLOAD ZONE ─── */
+  .upload-zone {
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow);
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+  .upload-zone .icon { font-size: 48px; margin-bottom: 12px; }
+  .upload-zone h3 { font-size: 18px; font-weight: 700; color: var(--primary); }
+  .upload-zone p { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .upload-zone input { display: none; }
+
+  /* ─── METADATA ─── */
+  .meta-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .meta-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    flex: 1;
+    min-width: 180px;
+    box-shadow: var(--shadow);
+  }
+  .meta-item .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 600; }
+  .meta-item .value { font-size: 22px; font-weight: 800; color: var(--primary); margin-top: 2px; }
+  .meta-item .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ─── CLASS LIST ─── */
+  .class-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .class-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .class-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+  .class-card.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+  .class-card .class-name { font-size: 16px; font-weight: 700; color: var(--text); }
+  .class-card .class-info { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .class-card .class-count {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: var(--primary);
+    color: white;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+
+  /* ─── BREADCRUMB ─── */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .breadcrumb a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  /* ─── DATA TABLE ─── */
+  .table-wrapper {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .table-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .table-header h3 { font-size: 16px; font-weight: 700; }
+  .table-header .actions { display: flex; gap: 8px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: #1b6b43; }
+  .btn-outline { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:hover { background: var(--bg); }
+  .btn-back { background: transparent; color: var(--primary); padding: 8px 12px; }
+  .btn-back:hover { background: var(--primary-light); }
+
+  .search-input {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    width: 220px;
+    outline: none;
+  }
+  .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(45,122,80,0.1); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 700;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f2f1;
+    vertical-align: top;
+  }
+  tr:hover td { background: #fafcfb; }
+  .text-center { text-align: center; }
+  .text-right { text-align: right; }
+  .mono { font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 12px; }
+  .badge-att {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .badge-h { background: #dcfce7; color: #166534; }
+  .badge-s { background: #fef3c7; color: #92400e; }
+  .badge-i { background: #dbeafe; color: #1e40af; }
+  .badge-a { background: #fee2e2; color: #991b1b; }
+  .badge-disc {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 800;
+    border: 2px solid;
+  }
+  .disc-a { background: #dcfce7; border-color: #22c55e; color: #166534; }
+  .disc-b { background: #dbeafe; border-color: #3b82f6; color: #1e40af; }
+  .disc-c { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+  .disc-d { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+
+  .grade-cell { font-weight: 600; font-size: 12px; }
+  .grade-empty { color: #ccc; }
+
+  .expand-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--primary);
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .expand-btn:hover { background: var(--primary-light); }
+
+  .grades-detail {
+    background: #fafcfb;
+    padding: 12px 14px;
+  }
+  .grades-detail table { font-size: 12px; }
+  .grades-detail th { font-size: 9px; padding: 6px 8px; }
+  .grades-detail td { padding: 6px 8px; border-bottom: 1px solid #eee; }
+
+  .hidden { display: none; }
+
+  /* ─── PRINT STYLES ─── */
+  @media print {
+    body { background: white; }
+    .header { background: none !important; color: black; padding: 16px; border-bottom: 2px solid #333; }
+    .header h1 { color: #333; }
+    .header h1 span { color: #666; }
+    .header .badge { display: none; }
+    .upload-zone { display: none; }
+    .no-print { display: none !important; }
+    .class-card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+    .table-wrapper { box-shadow: none; border: 1px solid #ccc; }
+    .meta-item { box-shadow: none; border: 1px solid #ccc; }
+    table { font-size: 11px; }
+    th, td { padding: 6px 8px; }
+    .btn { display: none; }
+    .search-input { display: none; }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 640px) {
+    .container { padding: 12px; }
+    .header { padding: 20px 16px; }
+    .header h1 { font-size: 22px; }
+    .class-grid { grid-template-columns: 1fr; }
+    .table-header { flex-direction: column; align-items: flex-start; }
+    .search-input { width: 100%; }
+    table { font-size: 11px; }
+    th, td { padding: 6px 8px; }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
+  .empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>IIS COMMUNITY <span>CONNECT</span></h1>
+  <p>Offline Data Viewer — Buka file JSON export untuk melihat data akademik</p>
+  <div class="badge">🔒 100% Offline — Tanpa Server</div>
+</div>
+
+<div class="container">
+  <!-- UPLOAD ZONE -->
+  <div id="uploadZone" class="upload-zone" onclick="document.getElementById('fileInput').click()">
+    <div class="icon">📂</div>
+    <h3>Pilih File JSON Export</h3>
+    <p>Klik disini atau drag & drop file JSON dari Export Data Akademik IIS</p>
+    <input type="file" id="fileInput" accept=".json" onchange="handleFile(event)">
+  </div>
+
+  <!-- DATA DISPLAY -->
+  <div id="dataView" class="hidden">
+    <!-- Meta info -->
+    <div id="metaBar" class="meta-bar"></div>
+
+    <!-- Class list / Detail view -->
+    <div id="contentArea"></div>
+  </div>
+</div>
+
+<script>
+  // ─── STATE ───
+  let data = null;
+  let currentClass = null;
+  let searchTerm = '';
+
+  // ─── DRAG & DROP ───
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.json')) loadFile(file);
+    else alert('⚠️ Hanya file JSON yang didukung.');
+  });
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (file) loadFile(file);
+  }
+
+  function loadFile(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        data = JSON.parse(e.target.result);
+        if (!data.classes || !data.semester) {
+          alert('⚠️ Format JSON tidak valid. Pastikan ini file export dari IIS COMMUNITY CONNECT.');
+          return;
+        }
+        currentClass = null;
+        searchTerm = '';
+        document.getElementById('uploadZone').classList.add('hidden');
+        document.getElementById('dataView').classList.remove('hidden');
+        renderMeta();
+        renderClassList();
+      } catch (err) {
+        alert('❌ Gagal membaca file: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ─── RENDER META BAR ───
+  function renderMeta() {
+    const m = document.getElementById('metaBar');
+    m.innerHTML = `
+      <div class="meta-item">
+        <div class="label">Semester</div>
+        <div class="value" style="font-size:16px">${data.semester.name} ${data.semester.year}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Total Kelas</div>
+        <div class="value">${data.summary.total_classes}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Total Siswa</div>
+        <div class="value">${data.summary.total_students}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Waktu Export</div>
+        <div class="value" style="font-size:14px">${data.exported_at}</div>
+      </div>
+    `;
+  }
+
+  // ─── RENDER CLASS LIST ───
+  function renderClassList() {
+    currentClass = null;
+    const area = document.getElementById('contentArea');
+    let html = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+        <h3 style="font-size:18px;font-weight:700;">📋 Daftar Kelas</h3>
+        <div class="no-print" style="display:flex;gap:8px;">
+          <button class="btn btn-outline" onclick="loadNewFile()">📂 Buka File Lain</button>
+          <button class="btn btn-primary" onclick="window.print()">🖨️ Cetak Semua</button>
+        </div>
+      </div>
+      <div class="class-grid">
+    `;
+
+    data.classes.forEach((cls, idx) => {
+      html += `
+        <div class="class-card" onclick="openClass(${idx})">
+          <div class="class-name">${cls.class_name}</div>
+          <div class="class-info">Level ${cls.level} · Wali: ${cls.homeroom_teacher}</div>
+          <div class="class-count">${cls.total_students}</div>
+        </div>
+      `;
+    });
+
+    html += '</div>';
+    area.innerHTML = html;
+  }
+
+  // ─── OPEN CLASS DETAIL ───
+  function openClass(idx) {
+    currentClass = idx;
+    searchTerm = '';
+    renderClassDetail();
+  }
+
+  function renderClassDetail() {
+    const cls = data.classes[currentClass];
+    const area = document.getElementById('contentArea');
+    
+    const filtered = cls.students.filter(s => {
+      if (!searchTerm) return true;
+      const q = searchTerm.toLowerCase();
+      return s.name.toLowerCase().includes(q) || (s.nisn && s.nisn.toLowerCase().includes(q)) || (s.nis && s.nis.toLowerCase().includes(q));
+    });
+
+    let html = `
+      <div class="breadcrumb">
+        <a onclick="renderClassList()">← Daftar Kelas</a>
+        <span>›</span>
+        <span>${cls.class_name}</span>
+      </div>
+      <div class="table-wrapper">
+        <div class="table-header">
+          <div>
+            <h3>${cls.class_name} — ${cls.total_students} Siswa</h3>
+            <p style="font-size:12px;color:var(--muted);margin-top:2px;">Wali Kelas: ${cls.homeroom_teacher} · Level ${cls.level}</p>
+          </div>
+          <div class="actions no-print">
+            <input type="text" class="search-input" placeholder="Cari siswa..." 
+                   value="${searchTerm}" oninput="searchTerm=this.value;renderClassDetail()">
+            <button class="btn btn-primary" onclick="window.print()">🖨️ Cetak</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:36px">No</th>
+                <th>NISN</th>
+                <th>NIS</th>
+                <th>Nama Siswa</th>
+                <th>L/P</th>
+                <th class="text-center">Kehadiran</th>
+                <th class="text-center">Disiplin</th>
+                <th class="text-center">Nilai</th>
+              </tr>
+            </thead>
+            <tbody>
+    `;
+
+    if (filtered.length === 0) {
+      html += `<tr><td colspan="8" class="text-center" style="padding:40px;color:var(--muted);">
+        ${searchTerm ? 'Tidak ditemukan siswa dengan kata kunci "' + searchTerm + '"' : 'Belum ada data siswa'}
+      </td></tr>`;
+    } else {
+      filtered.forEach((s, i) => {
+        const att = s.attendance || {};
+        const discScore = s.discipline_score;
+        const discClass = discScore >= 80 ? 'disc-a' : discScore >= 60 ? 'disc-b' : discScore >= 40 ? 'disc-c' : 'disc-d';
+        const hasGrades = s.grades && s.grades.length > 0;
+        const gender = s.gender === 'Laki-laki' ? 'L' : s.gender === 'Perempuan' ? 'P' : s.gender;
+
+        html += `
+          <tr>
+            <td class="text-center" style="color:var(--muted)">${i+1}</td>
+            <td class="mono">${s.nisn || '-'}</td>
+            <td class="mono">${s.nis || '-'}</td>
+            <td style="font-weight:600">${s.name}</td>
+            <td class="text-center">${gender || '-'}</td>
+            <td class="text-center">
+              <span class="badge-att badge-h">H:${att.hadir||0}</span>
+              <span class="badge-att badge-s">S:${att.sakit||0}</span>
+              <span class="badge-att badge-i">I:${att.izin||0}</span>
+              <span class="badge-att badge-a">A:${att.alpa||0}</span>
+            </td>
+            <td class="text-center">
+              ${discScore !== null && discScore !== undefined 
+                ? '<span class="badge-disc ' + discClass + '">' + discScore + '</span>' 
+                : '<span style="color:#ccc">—</span>'}
+            </td>
+            <td class="text-center">
+              ${hasGrades 
+                ? '<button class="expand-btn" onclick="toggleGrades(this, ' + currentClass + ', ' + cls.students.indexOf(s) + ')">📊 ' + s.grades.length + ' mapel</button>' 
+                : '<span style="color:#ccc">—</span>'}
+            </td>
+          </tr>
+          <tr class="hidden grades-row" id="grades-${currentClass}-${cls.students.indexOf(s)}">
+            <td colspan="8" class="grades-detail" style="padding:0"></td>
+          </tr>
+        `;
+      });
+    }
+
+    html += `
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    area.innerHTML = html;
+  }
+
+  // ─── TOGGLE GRADES DETAIL ───
+  function toggleGrades(btn, classIdx, studentIdx) {
+    const row = document.getElementById('grades-' + classIdx + '-' + studentIdx);
+    if (row.classList.contains('hidden')) {
+      row.classList.remove('hidden');
+      btn.textContent = '▼ Tutup';
+      const student = data.classes[classIdx].students[studentIdx];
+      const td = row.querySelector('td');
+      
+      let gtHtml = `
+        <div style="padding:12px 14px;">
+          <table style="font-size:12px;">
+            <thead>
+              <tr>
+                <th>Mata Pelajaran</th>
+                <th class="text-center">NA1</th><th class="text-center">NA2</th>
+                <th class="text-center">NA3</th><th class="text-center">NA4</th>
+                <th class="text-center">NA5</th><th class="text-center">NA6</th>
+                <th class="text-center">NA7</th><th class="text-center">NA8</th>
+                <th class="text-center">NA9</th><th class="text-center">NA10</th>
+                <th class="text-center" style="background:#fef3c7">UAS</th>
+                <th class="text-center" style="background:#dbeafe">Project</th>
+                <th class="text-center" style="background:#dcfce7;font-weight:800">Rata²</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      student.grades.forEach(g => {
+        const nas = [g.na1, g.na2, g.na3, g.na4, g.na5, g.na6, g.na7, g.na8, g.na9, g.na10];
+        const validNas = nas.filter(n => n !== null && n !== undefined && n !== '');
+        const avg = validNas.length > 0 ? (validNas.reduce((a, b) => a + Number(b), 0) / validNas.length).toFixed(1) : '—';
+        
+        gtHtml += `<tr>
+          <td style="font-weight:600">${g.subject_name}</td>
+          ${nas.map(n => `<td class="text-center grade-cell ${n === null || n === undefined || n === '' ? 'grade-empty' : ''}">${n ?? '—'}</td>`).join('')}
+          <td class="text-center grade-cell" style="background:#fffbeb">${g.exam ?? '—'}</td>
+          <td class="text-center grade-cell" style="background:#eff6ff">${g.project ?? '—'}</td>
+          <td class="text-center grade-cell" style="background:#f0fdf4;font-weight:800">${avg}</td>
+        </tr>`;
+      });
+
+      gtHtml += '</tbody></table></div>';
+      td.innerHTML = gtHtml;
+    } else {
+      row.classList.add('hidden');
+      const student = data.classes[classIdx].students[studentIdx];
+      btn.textContent = '📊 ' + student.grades.length + ' mapel';
+    }
+  }
+
+  // ─── LOAD NEW FILE ───
+  function loadNewFile() {
+    data = null;
+    currentClass = null;
+    document.getElementById('dataView').classList.add('hidden');
+    document.getElementById('uploadZone').classList.remove('hidden');
+    document.getElementById('fileInput').value = '';
+  }
+</script>
+
+</body>
+</html>
