@@ -300,8 +300,8 @@ const routes: MockRoute[] = [
 
   // ─── Admin Dashboard ───────────────────────────────────────────
   { method: 'get', pattern: /\/admin\/dashboard$/, handler: () => dashboardStats },
-  { method: 'get', pattern: /\/admin\/system-health/, handler: () => ({ data: healthData }) },
-  { method: 'get', pattern: /\/admin\/leaderboard/, handler: () => ({ data: leaderboardData }) },
+  { method: 'get', pattern: /\/admin\/system\/health/, handler: () => healthData },
+  { method: 'get', pattern: /\/admin\/leaderboard\/discipline/, handler: () => leaderboardData },
 
   // ─── Admin CRUD ────────────────────────────────────────────────
   { method: 'get', pattern: /\/admin\/teachers$/, handler: () => ({ data: teachers }) },
