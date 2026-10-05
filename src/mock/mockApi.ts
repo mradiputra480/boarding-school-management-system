@@ -205,13 +205,32 @@ const parentStudentData = {
 
 const healthData = {
   status: 'healthy' as const,
-  laravel_version: '11.x',
-  php_version: '8.5.0',
-  disk: { used_gb: 2.3, total_gb: 10, percentage: 23 },
-  cache: { driver: 'file', status: 'connected' },
-  database: { status: 'connected', tables: 42 },
-  uptime: '45 days',
-  last_backup: '2026-10-04T02:00:00Z',
+  response_ms: 45,
+  speed_rating: 'A',
+  environment: {
+    type: 'production',
+    cache_driver: 'file',
+    queue_driver: 'sync',
+    exec_available: true,
+    php_version: '8.5.0',
+    php_compatible: true,
+  },
+  services: {
+    database: { ok: true, ms: 12 },
+    cache: { ok: true, ms: 2, driver: 'file' },
+    queue: { driver: 'sync', status: 'running', workers: 1 },
+    opcache: { enabled: true, scripts: 1543, hit_rate: 98.5, memory_used_mb: 64.2 },
+  },
+  resources: {
+    disk_used_pct: 45.2,
+    disk_free_gb: 54.8,
+    storage_mb: 1024,
+    php_memory_mb: 128,
+    php_memory_limit_mb: 512,
+  },
+  backup: { last: '2026-10-04T02:00:00Z', count: 5, days_since: 1, status: 'ok', total_size_mb: 250 },
+  alerts: [],
+  timestamp: new Date().toISOString(),
 };
 
 const waBlastHistory = [
